@@ -1,8 +1,9 @@
 @import "tailwindcss";
 
-/* Ajuste de scrollbar para manter limpo */
+/* Ajuste de scrollbar global (para PC) */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
@@ -13,6 +14,23 @@
 }
 .dark ::-webkit-scrollbar-thumb {
   background: #334155;
+}
+
+/* ESCONDER SCROLLBAR NO CELULAR (Scroll Horizontal) */
+.hide-scrollbar {
+  -ms-overflow-style: none !important;  /* IE e Edge */
+  scrollbar-width: none !important;  /* Firefox */
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none !important; /* Chrome, Safari e Opera */
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* Evitar rolagem horizontal indesejada no celular */
+html, body {
+  overflow-x: hidden;
+  width: 100%;
 }
 
 body {

@@ -10,6 +10,7 @@ import HistoryView from './HistoryView';
 import BrainDumpView from './BrainDumpView';
 import HabitTracker from './HabitTracker';
 import AuthView from './AuthView';
+import WeeklyRoutineView from './WeeklyRoutineView';
 import { supabase } from './supabaseClient';
 import { LogOut } from 'lucide-react';
 import { Toaster } from 'react-hot-toast';
@@ -32,11 +33,15 @@ export default function App() {
     ];
     return saved ? JSON.parse(saved) : defaultHabits;
   });
+
+  const [routines, setRoutines] = useState(() => {
+    const saved = localStorage.getItem('adhd-routines');
+    return saved ? JSON.parse(saved) : [];
+  });
   
   const [focusedTaskId, setFocusedTaskId] = useState(null);
-  const [currentTab, setCurrentTab] = useState('focus'); // focus, calendar, braindump, history
+  const [currentTab, setCurrentTab] = useState('focus'); 
 
-  // Controle de Sessão de Usuário
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
@@ -52,15 +57,17 @@ export default function App() {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Persistência e Reset Diário de Hábitos
   useEffect(() => {
     localStorage.setItem('adhd-tasks', JSON.stringify(tasks));
   }, [tasks]);
 
   useEffect(() => {
+    localStorage.setItem('adhd-routines', JSON.stringify(routines));
+  }, [routines]);
+
+  useEffect(() => {
     const todayStr = new Date().toDateString();
     
-    // Resetar hábitos se virou o dia
     const resetHabits = habits.map(h => {
       if (h.completed && h.lastDone !== todayStr) {
         return { ...h, completed: false };
@@ -103,7 +110,6 @@ export default function App() {
     setHabits(habits.filter(h => h.id !== id));
   };
 
-  // Corrige tarefas antigas que foram salvas com bug de conversão do BrainDump
   useEffect(() => {
     let changed = false;
     const fixedTasks = tasks.map(t => {
@@ -174,14 +180,13 @@ export default function App() {
   const todayTasks = tasks.filter(t => !t.completed && !t.isBrainDump && isSameDay(new Date(t.dueDate), new Date()));
   const focusedTask = tasks.find(t => t.id === focusedTaskId);
   
-  // Lógica Proteção contra Exaustão (Burnout TDAH)
   const highEnergyCount = todayTasks.filter(t => t.energy === 'high').length;
   const isOverloaded = highEnergyCount >= 3;
 
   const tabVariants = {
-    initial: { opacity: 0, x: -20 },
+    initial: { opacity: 0, x: -10 },
     animate: { opacity: 1, x: 0 },
-    exit: { opacity: 0, x: 20 }
+    exit: { opacity: 0, x: 10 }
   };
 
   if (isInitializing) {
@@ -199,7 +204,8 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-slate-100 transition-colors duration-300 font-sans md:py-12 flex justify-center">
-      <div className="w-full max-w-2xl px-6 pt-8 pb-24 md:pb-6 relative min-h-[100dvh] md:min-h-0 bg-white dark:bg-zinc-950 md:shadow-2xl md:rounded-3xl border-x md:border border-slate-100 dark:border-zinc-900 overflow-hidden">
+      {/* Alterado px-6 para px-4 sm:px-6 e pb-24 para pb-32 para dar espaço real à BottomNav no mobile */}
+      <div className="w-full max-w-2xl px-4 sm:px-6 pt-6 pb-32 md:pb-6 relative min-h-[100dvh] md:min-h-0 bg-white dark:bg-zinc-950 md:shadow-2xl md:rounded-3xl md:border border-slate-100 dark:border-zinc-900 overflow-x-hidden">
         
         {!focusedTask && currentTab === 'focus' && (
           <header className="mb-6 pt-2 flex justify-between items-start">
@@ -207,7 +213,7 @@ export default function App() {
               <h1 className="text-3xl font-bold tracking-tight text-slate-800 dark:text-slate-200">
                 Agora
               </h1>
-              <p className="text-slate-500 dark:text-slate-400 mt-1">
+              <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 mt-1">
                 Coloque para fora da mente.
               </p>
             </div>
@@ -220,13 +226,11 @@ export default function App() {
               <LogOut size={16} className="group-hover:-translate-x-0.5 transition-transform" />
               <span className="text-xs font-bold uppercase tracking-wider hidden sm:block">Sair</span>
             </button>
-            <div className="basis-full h-0"></div> {/* Quebra de linha da flex */}
           </header>
         )}
 
         {!focusedTask && currentTab === 'focus' && (
           <div className="mb-6 rounded-2xl relative">
-            {/* Alerta de Sobrecarga (Burnout Prevent) */}
             <AnimatePresence>
               {isOverloaded && (
                 <motion.div 
@@ -238,7 +242,7 @@ export default function App() {
                   <div className="mt-0.5 text-xl">⚠️</div>
                   <div>
                     <strong className="block text-sm font-bold uppercase tracking-wide">Alerta de Exaustão</strong>
-                    <span className="text-sm">Você planejou {highEnergyCount} ou mais tarefas pesadas para hoje. Que tal adiar algumas para amhãmã e cuidar da sua energia?</span>
+                    <span className="text-sm block mt-1">Você planejou {highEnergyCount} ou mais tarefas pesadas para hoje. Que tal adiar algumas para amanhã e cuidar da sua energia?</span>
                   </div>
                 </motion.div>
               )}
@@ -246,8 +250,8 @@ export default function App() {
           </div>
         )}
 
-        {/* View Router */}
         <Toaster position="bottom-center" toastOptions={{ className: 'dark:bg-zinc-800 dark:text-white' }} />
+        
         <AnimatePresence mode="wait">
           {focusedTask ? (
             <TaskFocus 
@@ -286,6 +290,13 @@ export default function App() {
                   />
                 </div>
               )}
+
+              {currentTab === 'routine' && (
+                <WeeklyRoutineView 
+                  routines={routines}
+                  setRoutines={setRoutines}
+                />
+              )}
               
               {currentTab === 'calendar' && (
                 <CalendarView 
@@ -316,7 +327,6 @@ export default function App() {
           )}
         </AnimatePresence>
 
-        {/* Bottom Navigation */}
         {!focusedTask && (
           <BottomNav currentTab={currentTab} onChange={setCurrentTab} />
         )}
