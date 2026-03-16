@@ -95,13 +95,15 @@ export default function App() {
     }));
   };
 
-  const handleAddHabit = (title) => {
+  // NOVA FUNÇÃO ATUALIZADA PARA AS NOTIFICAÇÕES
+  const handleAddHabit = (title, intervalMinutes = null) => {
     const newHabit = {
       id: crypto.randomUUID(),
       title,
       icon: 'sun',
       completed: false,
-      lastDone: null
+      lastDone: null,
+      intervalMinutes // <-- Guarda os minutos para disparar a notificação
     };
     setHabits([...habits, newHabit]);
   };
@@ -204,7 +206,6 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-slate-100 transition-colors duration-300 font-sans md:py-12 flex justify-center">
-      {/* Alterado px-6 para px-4 sm:px-6 e pb-24 para pb-32 para dar espaço real à BottomNav no mobile */}
       <div className="w-full max-w-2xl px-4 sm:px-6 pt-6 pb-32 md:pb-6 relative min-h-[100dvh] md:min-h-0 bg-white dark:bg-zinc-950 md:shadow-2xl md:rounded-3xl md:border border-slate-100 dark:border-zinc-900 overflow-x-hidden">
         
         {!focusedTask && currentTab === 'focus' && (
