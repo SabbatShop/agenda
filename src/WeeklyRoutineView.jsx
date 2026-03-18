@@ -14,7 +14,12 @@ const WEEK_DAYS = [
 ];
 
 export default function WeeklyRoutineView({ routines, setRoutines }) {
-  const [selectedDay, setSelectedDay] = useState('segunda');
+  const getTodayId = () => {
+    const dayIndex = new Date().getDay(); // 0=Dom, 1=Seg...6=Sáb
+    const map = ['domingo', 'segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado'];
+    return map[dayIndex];
+  };
+  const [selectedDay, setSelectedDay] = useState(getTodayId);
   const [isAdding, setIsAdding] = useState(false);
   const [newRoutine, setNewRoutine] = useState({ title: '', startTime: '', endTime: '' });
 
