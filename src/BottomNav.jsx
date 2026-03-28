@@ -1,5 +1,5 @@
 import React from 'react';
-import { Target, Calendar as CalendarIcon, Trophy, Lightbulb, Repeat } from 'lucide-react';
+import { Target, Calendar as CalendarIcon, Trophy, Lightbulb, Repeat, CloudSun } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -12,12 +12,14 @@ export default function BottomNav({ currentTab, onChange }) {
     { id: 'focus', label: 'Hoje', icon: Target },
     { id: 'routine', label: 'Rotina', icon: Repeat },
     { id: 'calendar', label: 'Agenda', icon: CalendarIcon },
+    { id: 'weather', label: 'Clima', icon: CloudSun },
     { id: 'braindump', label: 'Ideias', icon: Lightbulb },
     { id: 'history', label: 'Vitórias', icon: Trophy },
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-md border-t border-slate-200 dark:border-zinc-800 pt-2 px-2 flex justify-between items-center z-50 pb-[calc(env(safe-area-inset-bottom)+0.5rem)]">
+    <nav id="tour-bottom-nav" className="fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-zinc-900/90 backdrop-blur-xl border-t border-slate-100/50 dark:border-zinc-800/80 pb-[env(safe-area-inset-bottom)] z-40 transition-colors">
+      <div className="flex justify-around items-center h-16 sm:h-20 max-w-2xl mx-auto px-2 sm:px-6 relative">
       {tabs.map((tab) => {
         const Icon = tab.icon;
         const isActive = currentTab === tab.id;
@@ -47,6 +49,7 @@ export default function BottomNav({ currentTab, onChange }) {
           </button>
         );
       })}
-    </div>
+      </div>
+    </nav>
   );
 }

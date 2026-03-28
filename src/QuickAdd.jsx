@@ -48,7 +48,7 @@ export default function QuickAdd({ onAdd, isBrainDumpMode = false, placeholder =
       animate={{ opacity: 1, y: 0 }}
       className="relative z-10"
     >
-      <form onSubmit={handleSubmit} className="relative">
+      <form id="tour-quick-add" onSubmit={handleSubmit} className="relative">
         <input
           type="text"
           value={title}

@@ -12,7 +12,9 @@ import BrainDumpView from './BrainDumpView';
 import HabitTracker from './HabitTracker';
 import WeeklyRoutineView from './WeeklyRoutineView';
 import MoodWidget from './MoodWidget';
-import DarkModeToggle from './DarkModeToggle';
+import OnboardingTutorial from './OnboardingTutorial';
+import WeatherView from './WeatherView';
+
 import { Toaster } from 'react-hot-toast';
 import toast from 'react-hot-toast';
 
@@ -35,16 +37,20 @@ function playSuccess() {
 }
 
 export default function App() {
-  // --- DARK MODE ---
-  const [isDark, setIsDark] = useState(() => {
-    const saved = localStorage.getItem('adhd-darkmode');
-    return saved !== null ? JSON.parse(saved) : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  // Sempre modo escuro
+  useEffect(() => {
+    document.documentElement.classList.add('dark');
+  }, []);
+
+  // --- ONBOARDING (só aparece na primeira vez) ---
+  const [showOnboarding, setShowOnboarding] = useState(() => {
+    return !localStorage.getItem('adhd-onboarding-done');
   });
 
-  useEffect(() => {
-    document.documentElement.classList.toggle('dark', isDark);
-    localStorage.setItem('adhd-darkmode', JSON.stringify(isDark));
-  }, [isDark]);
+  const handleFinishOnboarding = () => {
+    localStorage.setItem('adhd-onboarding-done', '1');
+    setShowOnboarding(false);
+  };
 
   // --- TAREFAS ---
   const [tasks, setTasks] = useState(() => {
@@ -205,6 +211,14 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-slate-100 transition-colors duration-300 font-sans flex justify-center overflow-x-hidden">
+
+      {/* Tutorial de primeiro acesso */}
+      <AnimatePresence>
+        {showOnboarding && (
+          <OnboardingTutorial onFinish={handleFinishOnboarding} />
+        )}
+      </AnimatePresence>
+
       <div className="w-full max-w-2xl px-4 sm:px-6 pt-[max(env(safe-area-inset-top),2rem)] pb-[calc(env(safe-area-inset-bottom)+5rem)] md:pb-12 relative min-h-screen bg-white dark:bg-zinc-950 md:shadow-2xl md:rounded-3xl md:border border-slate-100 dark:border-zinc-900">
 
         {/* HEADER da aba Hoje */}
@@ -217,6 +231,7 @@ export default function App() {
             <div className="flex items-center gap-2 mt-1">
               {/* Modo Uma Coisa Só */}
               <motion.button
+                id="tour-one-thing"
                 whileTap={{ scale: 0.85 }}
                 onClick={() => { setOneThing(!oneThing); setPanicMode(false); }}
                 title={oneThing ? 'Mostrar todas as tarefas' : 'Modo: Uma Coisa Só'}
@@ -226,6 +241,7 @@ export default function App() {
               </motion.button>
               {/* Modo Pânico */}
               <motion.button
+                id="tour-panic-mode"
                 whileTap={{ scale: 0.85 }}
                 onClick={() => { setPanicMode(!panicMode); setOneThing(false); }}
                 title={panicMode ? 'Sair do modo pânico' : 'Modo Pânico — mostrar só 3 tarefas'}
@@ -233,18 +249,12 @@ export default function App() {
               >
                 <Siren size={20} />
               </motion.button>
-              {/* Dark mode */}
-              <DarkModeToggle isDark={isDark} onToggle={() => setIsDark(!isDark)} />
+
             </div>
           </header>
         )}
 
-        {/* Header fora da aba focus */}
-        {!focusedTask && currentTab !== 'focus' && (
-          <div className="flex justify-end mb-4 pt-2">
-            <DarkModeToggle isDark={isDark} onToggle={() => setIsDark(!isDark)} />
-          </div>
-        )}
+
 
         {/* Alerta de sobrecarga */}
         {!focusedTask && currentTab === 'focus' && isOverloaded && !panicMode && (
@@ -346,6 +356,9 @@ export default function App() {
                 onDelete={handleDeleteTask}
                 onAddForDate={handleAddForDate}
               />
+              )}
+              {currentTab === 'weather' && (
+                <WeatherView />
               )}
               {currentTab === 'braindump' && (
                 <BrainDumpView
